@@ -3,10 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, AlertCircle, Wifi, WifiOff } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import TypingIndicator from "./TypingIndicator";
-import { getAIResponse } from "@/utils/aiResponses";
+import { getAIResponse, resetConversation } from "@/utils/aiResponses";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -20,13 +21,29 @@ const ChatInterface = () => {
     {
       id: '1',
       type: 'ai',
-      content: 'Merhaba! Ben YouTube video indirme konusunda size yardımcı olacak AI asistanınızım. Video indirme, format dönüştürme, kalite seçimi ve teknik sorularınız için buradayım. Size nasıl yardımcı olabilirim?',
+      content: 'Merhaba! Ben YouTube video indirme konusunda size yardımcı olacak AI asistanınızım. OpenAI GPT-4 ile güçlendirilmiş gelişmiş yanıtlar sunuyorum. Video indirme, format dönüştürme, kalite seçimi ve teknik sorularınız için buradayım. Size nasıl yardımcı olabilirim?',
       timestamp: new Date()
     }
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  // Monitor online status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -50,8 +67,7 @@ const ChatInterface = () => {
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI thinking time
-    setTimeout(async () => {
+    try {
       const aiResponse = await getAIResponse(inputValue);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -61,8 +77,25 @@ const ChatInterface = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Chat Error:', error);
+      toast({
+        title: "Bağlantı Hatası",
+        description: "AI yanıtı alınırken hata oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive"
+      });
+
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        type: 'ai',
+        content: "🛠️ **Bağlantı Hatası**\n\nYanıt alırken bir sorun oluştu. Lütfen:\n• İnternet bağlantınızı kontrol edin\n• Tekrar deneyin\n• Sorun devam ederse sayfayı yenileyin",
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -72,23 +105,63 @@ const ChatInterface = () => {
     }
   };
 
+  const clearChat = () => {
+    setMessages([{
+      id: '1',
+      type: 'ai',
+      content: 'Sohbet temizlendi! Size nasıl yardımcı olabilirim?',
+      timestamp: new Date()
+    }]);
+    resetConversation();
+  };
+
   return (
     <Card className="h-[600px] flex flex-col shadow-xl border-0 bg-white/80 backdrop-blur-sm">
       {/* Chat Header */}
       <div className="p-4 border-b bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <Bot className="w-6 h-6" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <Bot className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-semibold">AI Video Asistan</h3>
+              <div className="flex items-center gap-2 text-sm opacity-90">
+                {isOnline ? (
+                  <>
+                    <Wifi className="w-3 h-3" />
+                    <span>OpenAI GPT-4 Aktif</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3 h-3" />
+                    <span>Çevrimdışı Mod</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold">AI Video Asistan</h3>
-            <p className="text-sm opacity-90">Çevrimiçi • YouTube uzmanı</p>
-          </div>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={clearChat}
+            className="text-white hover:bg-white/20"
+          >
+            Temizle
+          </Button>
         </div>
       </div>
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {!isOnline && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center gap-2 text-yellow-800">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">İnternet bağlantısı yok. Sınırlı yanıtlar verilecek.</span>
+          </div>
+        )}
+        
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}
@@ -103,19 +176,20 @@ const ChatInterface = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Video indirme hakkında soru sorun..."
+            placeholder="YouTube video indirme hakkında soru sorun..."
             className="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            disabled={isTyping}
           />
           <Button 
             onClick={handleSendMessage} 
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || isTyping}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6"
           >
             <Send className="w-4 h-4" />
           </Button>
         </div>
         <p className="text-xs text-gray-500 mt-2 text-center">
-          YouTube video indirme, format dönüştürme ve teknik destek için sorun
+          OpenAI GPT-4 ile güçlendirilmiş • YouTube indirme uzmanı
         </p>
       </div>
     </Card>
