@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: mode === 'production' ? '/youtube-indirme/' : '/',
+  base: mode === 'production' ? '/hadi-bunu-yapalim-now/' : '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
