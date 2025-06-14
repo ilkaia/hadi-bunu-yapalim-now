@@ -3,11 +3,12 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Send, Bot, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import { Send, Bot, AlertCircle, Wifi, WifiOff, X, Minimize2 } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import TypingIndicator from "./TypingIndicator";
 import { getAIResponse, resetConversation } from "@/utils/aiResponses";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -16,12 +17,20 @@ interface Message {
   timestamp: Date;
 }
 
-const ChatInterface = () => {
+interface ChatInterfaceProps {
+  isWidget?: boolean;
+  onNewMessage?: () => void;
+  onClose?: () => void;
+}
+
+const ChatInterface = ({ isWidget = false, onNewMessage, onClose }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'ai',
-      content: 'Merhaba! Ben YouTube video indirme konusunda size yardımcı olacak AI asistanınızım. OpenAI GPT-4 ile güçlendirilmiş gelişmiş yanıtlar sunuyorum. Video indirme, format dönüştürme, kalite seçimi ve teknik sorularınız için buradayım. Size nasıl yardımcı olabilirim?',
+      content: isWidget 
+        ? 'Merhaba! YouTube video indirme konusunda size nasıl yardımcı olabilirim?' 
+        : 'Merhaba! Ben YouTube video indirme konusunda size yardımcı olacak AI asistanınızım. OpenAI GPT-4 ile güçlendirilmiş gelişmiş yanıtlar sunuyorum. Video indirme, format dönüştürme, kalite seçimi ve teknik sorularınız için buradayım. Size nasıl yardımcı olabilirim?',
       timestamp: new Date()
     }
   ]);
@@ -77,13 +86,20 @@ const ChatInterface = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      
+      // Notify parent component about new message (for widget mode)
+      if (isWidget && onNewMessage) {
+        onNewMessage();
+      }
     } catch (error) {
       console.error('Chat Error:', error);
-      toast({
-        title: "Bağlantı Hatası",
-        description: "AI yanıtı alınırken hata oluştu. Lütfen tekrar deneyin.",
-        variant: "destructive"
-      });
+      if (!isWidget) {
+        toast({
+          title: "Bağlantı Hatası",
+          description: "AI yanıtı alınırken hata oluştu. Lütfen tekrar deneyin.",
+          variant: "destructive"
+        });
+      }
 
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
@@ -116,7 +132,10 @@ const ChatInterface = () => {
   };
 
   return (
-    <Card className="h-[600px] flex flex-col shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+    <Card className={cn(
+      "flex flex-col shadow-xl border-0 bg-white/80 backdrop-blur-sm",
+      isWidget ? "h-full" : "h-[600px]"
+    )}>
       {/* Chat Header */}
       <div className="p-4 border-b bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
         <div className="flex items-center justify-between">
@@ -125,31 +144,58 @@ const ChatInterface = () => {
               <Bot className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-semibold">AI Video Asistan</h3>
-              <div className="flex items-center gap-2 text-sm opacity-90">
+              <h3 className={cn("font-semibold", isWidget ? "text-sm" : "text-base")}>
+                AI Video Asistan
+              </h3>
+              <div className="flex items-center gap-2 text-xs opacity-90">
                 {isOnline ? (
                   <>
                     <Wifi className="w-3 h-3" />
-                    <span>OpenAI GPT-4 Aktif</span>
+                    <span>GPT-4 Aktif</span>
                   </>
                 ) : (
                   <>
                     <WifiOff className="w-3 h-3" />
-                    <span>Çevrimdışı Mod</span>
+                    <span>Çevrimdışı</span>
                   </>
                 )}
               </div>
             </div>
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={clearChat}
-            className="text-white hover:bg-white/20"
-          >
-            Temizle
-          </Button>
+          <div className="flex items-center gap-2">
+            {!isWidget && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={clearChat}
+                className="text-white hover:bg-white/20"
+              >
+                Temizle
+              </Button>
+            )}
+            
+            {isWidget && onClose && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearChat}
+                  className="text-white hover:bg-white/20 p-2"
+                >
+                  <Minimize2 className="w-4 h-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onClose}
+                  className="text-white hover:bg-white/20 p-2"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -176,7 +222,7 @@ const ChatInterface = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="YouTube video indirme hakkında soru sorun..."
+            placeholder={isWidget ? "Soru sorun..." : "YouTube video indirme hakkında soru sorun..."}
             className="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             disabled={isTyping}
           />
@@ -188,9 +234,11 @@ const ChatInterface = () => {
             <Send className="w-4 h-4" />
           </Button>
         </div>
-        <p className="text-xs text-gray-500 mt-2 text-center">
-          OpenAI GPT-4 ile güçlendirilmiş • YouTube indirme uzmanı
-        </p>
+        {!isWidget && (
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            OpenAI GPT-4 ile güçlendirilmiş • YouTube indirme uzmanı
+          </p>
+        )}
       </div>
     </Card>
   );
