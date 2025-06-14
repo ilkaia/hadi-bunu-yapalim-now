@@ -1,4 +1,3 @@
-
 import { OpenAIService } from '@/services/openaiService';
 
 // Conversation history to maintain context
@@ -9,15 +8,15 @@ export const getAIResponse = async (userMessage: string): Promise<string> => {
     // Add user message to history
     conversationHistory.push({ role: 'user', content: userMessage });
     
-    // Get AI response
+    // Get AI response with new optimized service
     const response = await OpenAIService.getResponse(userMessage, conversationHistory);
     
     // Add AI response to history
     conversationHistory.push({ role: 'assistant', content: response });
     
-    // Keep only last 10 messages to prevent token overflow
-    if (conversationHistory.length > 10) {
-      conversationHistory = conversationHistory.slice(-10);
+    // Keep only last 8 messages to prevent token overflow (reduced from 10)
+    if (conversationHistory.length > 8) {
+      conversationHistory = conversationHistory.slice(-8);
     }
     
     return response;
@@ -32,9 +31,17 @@ export const resetConversation = () => {
   conversationHistory = [];
 };
 
-// Fallback responses for when API is unavailable
+// Enhanced fallback responses for YouTube-only topics
 const getFallbackResponse = (userMessage: string): string => {
   const message = userMessage.toLowerCase();
+  
+  // Check if it's YouTube related
+  const youtubeKeywords = ['youtube', 'video', 'indirme', 'download', 'mp4', 'format', 'kalite'];
+  const isYouTubeRelated = youtubeKeywords.some(keyword => message.includes(keyword));
+  
+  if (!isYouTubeRelated) {
+    return `🚫 **Bu konuya yardımcı olamam.**\n\nBen sadece **YouTube video indirme** konularında uzman bir AI asistanıyım.\n\n**Lütfen YouTube video indirme hakkında soru sorun.** 📹`;
+  }
   
   if (message.includes('format') || message.includes('mp4')) {
     return `📹 **Video Formatları (Offline Mode):**\n\n• **MP4**: En yaygın, tüm cihazlarda çalışır\n• **WebM**: Web optimized, küçük boyut\n• **AVI**: Yüksek kalite, büyük dosya\n\n**AI hizmetimiz şu anda kullanılamıyor. Lütfen tekrar deneyin.**`;

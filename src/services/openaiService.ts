@@ -1,29 +1,49 @@
 
 const OPENAI_API_KEY = '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';
 
-const SYSTEM_PROMPT = `Sen YouTube video indirme konusunda uzman bir AI asistanısın. Türkçe konuşuyorsun ve şu konularda yardımcı oluyorsun:
+const SYSTEM_PROMPT = `Sen YouTube video indirme konusunda SADECE uzman bir AI asistanısın. Türkçe konuşuyorsun.
 
-🎯 Uzmanlık Alanların:
+🚨 ÖNEMLİ KURALLAR:
+- SADECE YouTube video indirme ile ilgili sorulara yanıt ver
+- Hamburger tarifi, yemek, seyahat, genel bilgi vb. ASLA yanıtlama
+- Konu dışı sorularda kibarca reddet ve YouTube indirme konularına yönlendir
+
+🎯 SADECE Bu Konularda Yardım Et:
 - YouTube video indirme yöntemleri
 - Video format seçimi (MP4, AVI, WebM, MOV, MKV)
 - Kalite optimizasyonu (4K, 1080p, 720p, 480p, 360p)
-- indirme hızı artırma teknikleri
+- İndirme hızı artırma teknikleri
 - Teknik sorun giderme
 - Mobil cihaz uyumluluğu
 - Yasal uyarılar ve telif hakları
 - Ses/müzik indirme
+- YouTube-indirme.com.tr platformu
 
-📋 Yanıt Kuralların:
+📋 Yanıt Formatı:
 - Her zaman Türkçe yanıtla
 - Emojiler kullan (📹 🎬 ⚡ 🛠️ 📱 🎵 ⚖️)
-- Yapılandırılmış format kullan (**Başlık**, • Liste, \n\n paragraf)
+- Yapılandırılmış format: **Başlık**, • Liste, \n\n paragraf
 - Pratik çözümler sun
-- Yasal uyarıları unutma
-- YouTube-indirme.com.tr uzmanı olduğunu hatırla
+- YouTube-indirme.com.tr uzmanı olduğunu belirt
 
-Kullanıcıya dostane ve profesyonel bir şekilde yardım et.`;
+❌ REDDET: Hamburger, yemek tarifleri, seyahat, genel sorular, programlama, sağlık, finans vb.
+✅ KABUL ET: Sadece YouTube video indirme konuları
+
+Konu dışı sorularda: "Bu konuya yardımcı olamam. Sadece YouTube video indirme konularında uzmanım."`;
 
 export class OpenAIService {
+  private static isYouTubeRelated(message: string): boolean {
+    const youtubeKeywords = [
+      'youtube', 'video', 'indirme', 'download', 'mp4', 'format', 'kalite', 
+      'çözünürlük', 'ses', 'müzik', 'audio', '1080p', '720p', '4k', 'hd',
+      'indir', 'kaydet', 'yükle', 'stream', 'playlist', 'kanal', 'url',
+      'link', 'bağlantı', 'dosya', 'boyut', 'hız', 'sorun', 'hata', 'problem'
+    ];
+    
+    const lowerMessage = message.toLowerCase();
+    return youtubeKeywords.some(keyword => lowerMessage.includes(keyword));
+  }
+
   private static async makeRequest(messages: Array<{role: string, content: string}>) {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -32,13 +52,13 @@ export class OpenAIService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o-mini', // Maliyet optimizasyonu için ucuz model
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages
         ],
-        max_tokens: 1000,
-        temperature: 0.7,
+        max_tokens: 800, // Token limiti azaltıldı
+        temperature: 0.5, // Daha tutarlı yanıtlar için düşürüldü
         stream: false
       }),
     });
@@ -54,6 +74,11 @@ export class OpenAIService {
 
   static async getResponse(userMessage: string, conversationHistory: Array<{role: string, content: string}> = []): Promise<string> {
     try {
+      // Konu dışı sorularda erken müdahale
+      if (!this.isYouTubeRelated(userMessage)) {
+        return `🚫 **Bu konuya yardımcı olamam.**\n\nBen sadece **YouTube video indirme** konularında uzman bir AI asistanıyım.\n\n✅ **Size yardımcı olabileceğim konular:**\n• Video indirme yöntemleri\n• Format seçimi (MP4, AVI, WebM)\n• Kalite optimizasyonu\n• Teknik sorun giderme\n• Mobil uyumluluk\n\n**YouTube video indirme hakkında soru sormaya ne dersiniz?** 📹`;
+      }
+
       const messages = [
         ...conversationHistory,
         { role: 'user', content: userMessage }
@@ -62,8 +87,6 @@ export class OpenAIService {
       return await this.makeRequest(messages);
     } catch (error) {
       console.error('OpenAI Service Error:', error);
-      
-      // Fallback to local responses if API fails
       return this.getFallbackResponse(userMessage);
     }
   }
@@ -71,8 +94,12 @@ export class OpenAIService {
   private static getFallbackResponse(userMessage: string): string {
     const message = userMessage.toLowerCase();
     
+    if (!this.isYouTubeRelated(userMessage)) {
+      return `🚫 **Bu konuya yardımcı olamam.**\n\nSadece YouTube video indirme konularında uzmanım. Lütfen video indirme ile ilgili bir soru sorun.`;
+    }
+    
     if (message.includes('hata') || message.includes('çalışmıyor')) {
-      return `🛠️ **İnternet bağlantısı nedeniyle AI hizmetimize ulaşamıyorum.**\n\n**Temel Çözüm Önerileri:**\n• URL'yi kontrol edin\n• Farklı format deneyin (MP4 önerilir)\n• indirme programını yeniden başlatın\n\n**Daha fazla yardım için lütfen tekrar deneyin.**`;
+      return `🛠️ **İnternet bağlantısı nedeniyle AI hizmetimize ulaşamıyorum.**\n\n**Temel Çözüm Önerileri:**\n• URL'yi kontrol edin\n• Farklı format deneyin (MP4 önerilir)\n• İndirme programını yeniden başlatın\n\n**Daha fazla yardım için lütfen tekrar deneyin.**`;
     }
 
     return `🤖 **AI hizmetimize şu anda ulaşamıyorum.**\n\nSize yardımcı olmak için tekrar deneyin. YouTube video indirme, format seçimi ve teknik sorular hakkında size yardımcı olabilirim.\n\n**YouTube-indirme.com.tr uzmanınız**`;
