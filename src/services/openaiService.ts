@@ -7,7 +7,7 @@ const SYSTEM_PROMPT = `Sen YouTube video indirme konusunda uzman bir AI asistan�
 - YouTube video indirme yöntemleri
 - Video format seçimi (MP4, AVI, WebM, MOV, MKV)
 - Kalite optimizasyonu (4K, 1080p, 720p, 480p, 360p)
-- İndirme hızı artırma teknikleri
+- indirme hızı artırma teknikleri
 - Teknik sorun giderme
 - Mobil cihaz uyumluluğu
 - Yasal uyarılar ve telif hakları
@@ -19,7 +19,7 @@ const SYSTEM_PROMPT = `Sen YouTube video indirme konusunda uzman bir AI asistan�
 - Yapılandırılmış format kullan (**Başlık**, • Liste, \n\n paragraf)
 - Pratik çözümler sun
 - Yasal uyarıları unutma
-- YouTube-Indirme.com.tr uzmanı olduğunu hatırla
+- YouTube-indirme.com.tr uzmanı olduğunu hatırla
 
 Kullanıcıya dostane ve profesyonel bir şekilde yardım et.`;
 
@@ -32,7 +32,7 @@ export class OpenAIService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages
@@ -72,9 +72,9 @@ export class OpenAIService {
     const message = userMessage.toLowerCase();
     
     if (message.includes('hata') || message.includes('çalışmıyor')) {
-      return `🛠️ **İnternet bağlantısı nedeniyle AI hizmetimize ulaşamıyorum.**\n\n**Temel Çözüm Önerileri:**\n• URL'yi kontrol edin\n• Farklı format deneyin (MP4 önerilir)\n• İndirme programını yeniden başlatın\n\n**Daha fazla yardım için lütfen tekrar deneyin.**`;
+      return `🛠️ **İnternet bağlantısı nedeniyle AI hizmetimize ulaşamıyorum.**\n\n**Temel Çözüm Önerileri:**\n• URL'yi kontrol edin\n• Farklı format deneyin (MP4 önerilir)\n• indirme programını yeniden başlatın\n\n**Daha fazla yardım için lütfen tekrar deneyin.**`;
     }
 
-    return `🤖 **AI hizmetimize şu anda ulaşamıyorum.**\n\nSize yardımcı olmak için tekrar deneyin. YouTube video indirme, format seçimi ve teknik sorular hakkında size yardımcı olabilirim.\n\n**YouTube-Indirme.com.tr uzmanınız**`;
+    return `🤖 **AI hizmetimize şu anda ulaşamıyorum.**\n\nSize yardımcı olmak için tekrar deneyin. YouTube video indirme, format seçimi ve teknik sorular hakkında size yardımcı olabilirim.\n\n**YouTube-indirme.com.tr uzmanınız**`;
   }
 }

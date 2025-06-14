@@ -1,3 +1,4 @@
+
 import { OpenAIService } from '@/services/openaiService';
 
 // Conversation history to maintain context
@@ -43,5 +44,5 @@ const getFallbackResponse = (userMessage: string): string => {
     return `🎬 **Video Kalite Seçenekleri (Offline Mode):**\n\n• **4K**: Ultra yüksek çözünürlük\n• **1080p**: Full HD (önerilir)\n• **720p**: HD kalite\n• **480p**: Standart kalite\n\n**AI hizmetimiz şu anda kullanılamıyor. Lütfen tekrar deneyin.**`;
   }
 
-  return `🤖 **AI Hizmetimiz Geçici Olarak Kullanılamıyor**\n\nİnternet bağlantınızı kontrol edin ve tekrar deneyin. Size YouTube video indirme konusunda yardımcı olmak için buradayım.\n\n**YouTube-Indirme.com.tr**`;
+  return `🤖 **AI Hizmetimiz Geçici Olarak Kullanılamıyor**\n\nİnternet bağlantınızı kontrol edin ve tekrar deneyin. Size YouTube video indirme konusunda yardımcı olmak için buradayım.\n\n**YouTube-indirme.com.tr**`;
 };
