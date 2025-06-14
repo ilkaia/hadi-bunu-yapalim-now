@@ -12,7 +12,7 @@ Ana sitenizin HTML'ine şu kodu ekleyin:
 <script>
   (function() {
     var iframe = document.createElement('iframe');
-    iframe.src = 'https://ilkaia.github.io/youtube-indirme/';
+    iframe.src = 'https://ilkaia.github.io/hadi-bunu-yapalim-now/';
     iframe.style.cssText = `
       position: fixed;
       bottom: 20px;
@@ -44,6 +44,12 @@ Ana sitenizin HTML'ine şu kodu ekleyin:
 
 WordPress sitenizde `Appearance > Theme Editor > footer.php` dosyasına `</body>` etiketinden önce yukarıdaki kodu ekleyin.
 
+**Alternatif WordPress Yöntemi:**
+- Dashboard > Plugins > Add New
+- "Insert Headers and Footers" plugin'ini yükleyin
+- Settings > Insert Headers and Footers
+- Footer Scripts bölümüne kodu yapıştırın
+
 ## 3. React/Next.js Entegrasyonu
 
 ```jsx
@@ -52,7 +58,7 @@ import { useEffect } from 'react';
 export default function ChatWidget() {
   useEffect(() => {
     const iframe = document.createElement('iframe');
-    iframe.src = 'https://ilkaia.github.io/youtube-indirme/';
+    iframe.src = 'https://ilkaia.github.io/hadi-bunu-yapalim-now/';
     iframe.style.cssText = `
       position: fixed;
       bottom: 20px;
@@ -78,15 +84,62 @@ export default function ChatWidget() {
 }
 ```
 
-## 4. Özelleştirme Seçenekleri
+## 4. HTML Sitelerine Entegrasyon
 
-Widget pozisyonunu değiştirmek için CSS'deki `bottom`, `right` değerlerini değiştirin:
+Statik HTML sitenizde `</body>` etiketinden önce widget kodunu ekleyin:
 
-- Sol alt köşe: `bottom: 20px; left: 20px;`
-- Sağ üst köşe: `top: 20px; right: 20px;`
-- Sol üst köşe: `top: 20px; left: 20px;`
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube İndirme</title>
+</head>
+<body>
+    <!-- Site içeriğiniz -->
+    
+    <!-- YouTube Chat Widget -->
+    <script>
+      (function() {
+        var iframe = document.createElement('iframe');
+        iframe.src = 'https://ilkaia.github.io/hadi-bunu-yapalim-now/';
+        iframe.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          width: 400px;
+          height: 600px;
+          border: none;
+          border-radius: 12px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+          z-index: 9999;
+          background: white;
+          transition: all 0.3s ease;
+        `;
+        
+        if (window.innerWidth < 768) {
+          iframe.style.width = 'calc(100vw - 20px)';
+          iframe.style.height = 'calc(100vh - 40px)';
+          iframe.style.top = '20px';
+          iframe.style.left = '10px';
+        }
+        
+        document.body.appendChild(iframe);
+      })();
+    </script>
+</body>
+</html>
+```
 
-## 5. Custom Domain (Opsiyonel)
+## 5. Özelleştirme Seçenekleri
+
+Widget pozisyonunu değiştirmek için CSS'deki değerleri değiştirin:
+
+- **Sol alt köşe:** `bottom: 20px; left: 20px;`
+- **Sağ üst köşe:** `top: 20px; right: 20px;`
+- **Sol üst köşe:** `top: 20px; left: 20px;`
+- **Orta sağ:** `top: 50%; right: 20px; transform: translateY(-50%);`
+
+## 6. Custom Domain (Opsiyonel)
 
 Daha profesyonel görünüm için subdomain kurabilirsiniz:
 
@@ -102,12 +155,27 @@ Daha profesyonel görünüm için subdomain kurabilirsiniz:
    iframe.src = 'https://chat.youtube-indirme.com.tr/';
    ```
 
+## 7. Test ve Kontrol
+
+Widget'ın doğru çalıştığını kontrol edin:
+- ✅ Sağ alt köşede chat butonu görünüyor mu?
+- ✅ Butona tıkladığınızda chat penceresi açılıyor mu?
+- ✅ Mobilde responsive çalışıyor mu?
+- ✅ Diğer site elementleriyle çakışmıyor mu?
+
 ## Deployment Durumu
 
-✅ GitHub Actions otomatik deployment kuruldu
-✅ Her push'ta otomatik build ve deploy
-✅ Production-ready konfigürasyon
-✅ Mobile responsive tasarım
-✅ Cross-origin güvenlik ayarları
+✅ GitHub Actions otomatik deployment kuruldu  
+✅ Her push'ta otomatik build ve deploy  
+✅ Production-ready konfigürasyon  
+✅ Mobile responsive tasarım  
+✅ Cross-origin güvenlik ayarları  
 
-Widget şu adreste yayında: https://ilkaia.github.io/youtube-indirme/
+**Widget şu adreste yayında:** https://ilkaia.github.io/hadi-bunu-yapalim-now/
+
+## Destek
+
+Entegrasyon sırasında sorun yaşarsanız:
+1. Browser console'unu kontrol edin
+2. Widget URL'sinin erişilebilir olduğunu doğrulayın
+3. CSS çakışması olmadığından emin olun
