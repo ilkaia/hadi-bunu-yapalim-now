@@ -57,7 +57,12 @@ const ChatWidget = ({
   };
 
   return (
-    <>
+    <div 
+      className="chat-widget"
+      style={{ 
+        '--brand-color': brandColor 
+      } as React.CSSProperties}
+    >
       {/* Toggle Button */}
       <WidgetToggle 
         isOpen={isOpen}
@@ -78,9 +83,6 @@ const ChatWidget = ({
                 ),
             "animate-in slide-in-from-bottom-4 fade-in-0"
           )}
-          style={{ 
-            '--brand-color': brandColor 
-          } as React.CSSProperties}
         >
           {/* Backdrop for mobile */}
           {isMobile && (
@@ -100,14 +102,7 @@ const ChatWidget = ({
           </div>
         </div>
       )}
-
-      {/* Widget styles */}
-      <style jsx>{`
-        .chat-widget {
-          --primary-color: ${brandColor};
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 
