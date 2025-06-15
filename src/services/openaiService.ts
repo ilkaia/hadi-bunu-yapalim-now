@@ -45,7 +45,7 @@ export class OpenAIService {
   private static async makeRequest(messages: Array<{role: string, content: string}>) {
     // Edge function endpoint:
     const EDGE_FUNCTION_URL =
-      "https://qkybzlzzfbumyczewssi.functions.supabase.co/openai-chat";
+      "https://qkybzlzzfbumyczewssi.functions.supabase.co/youtubeindir_chat";
 
     const response = await fetch(EDGE_FUNCTION_URL, {
       method: "POST",

@@ -1,5 +1,5 @@
 
 project_id = "qkybzlzzfbumyczewssi"
 
-[functions.openai-chat]
+[functions.youtubeindir_chat]
 verify_jwt = false
