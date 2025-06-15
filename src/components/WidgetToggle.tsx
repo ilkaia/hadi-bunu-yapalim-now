@@ -9,7 +9,9 @@ interface WidgetToggleProps {
   unreadCount?: number;
 }
 
+// Sadece widget kapalıyken toggle gözüksün
 const WidgetToggle = ({ isOpen, onClick, unreadCount = 0 }: WidgetToggleProps) => {
+  if (isOpen) return null;
   return (
     <div className="relative">
       <Button
@@ -21,22 +23,16 @@ const WidgetToggle = ({ isOpen, onClick, unreadCount = 0 }: WidgetToggleProps) =
         )}
         size="icon"
       >
-        {isOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <MessageCircle className="w-6 h-6" />
-        )}
+        <MessageCircle className="w-6 h-6" />
       </Button>
-      
       {/* Unread Messages Badge */}
-      {unreadCount > 0 && !isOpen && (
+      {unreadCount > 0 && (
         <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
           {unreadCount > 9 ? '9+' : unreadCount}
         </div>
       )}
-      
       {/* Pulse Animation for New Messages */}
-      {unreadCount > 0 && !isOpen && (
+      {unreadCount > 0 && (
         <div className="absolute inset-0 rounded-full bg-blue-600 animate-ping opacity-75"></div>
       )}
     </div>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import ChatInterface from "./ChatInterface";
@@ -63,7 +62,7 @@ const ChatWidget = ({
         '--brand-color': brandColor 
       } as React.CSSProperties}
     >
-      {/* Toggle Button */}
+      {/* Toggle Button (sadece kapalıyken) */}
       <WidgetToggle 
         isOpen={isOpen}
         onClick={toggleWidget}
@@ -76,9 +75,9 @@ const ChatWidget = ({
           className={cn(
             "fixed z-40 transition-all duration-300 ease-in-out",
             isMobile 
-              ? "inset-4 top-4" // Mobile: Full screen with margin
+              ? "inset-4 top-4"
               : cn(
-                  "w-96 h-[600px]", // Desktop: Fixed size
+                  "w-96 h-[600px]",
                   positionClasses[position]
                 ),
             "animate-in slide-in-from-bottom-4 fade-in-0"

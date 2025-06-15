@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 const SYSTEM_PROMPT = `Sen YouTube video indirme konusunda SADECE uzman bir AI asistanısın. Türkçe konuşuyorsun.
@@ -53,10 +54,16 @@ export class OpenAIService {
     }
 
     // OpenAI API returns data in .choices[0].message.content
-    return (
-      data?.choices?.[0]?.message?.content ||
-      'Üzgünüm, yanıt oluşturamadım.'
-    );
+    // Daha fazla hata kontrolü eklendi!
+    if (!data || !data.choices || !Array.isArray(data.choices) || !data.choices[0]?.message?.content) {
+      // OpenAI dönüşünde bir hata mesajı varsa göster
+      if (data?.error) {
+        return `🛠️ **AI hizmetine erişilemedi!**\n\nDetay: ${data.error}\n\nLütfen tekrar deneyin veya daha sonra yeniden deneyin.`;
+      }
+      return `🛠️ **AI hizmetimizde geçici bir sorun oluştu.**\n\nSize şu anda yanıt veremiyorum. Lütfen internet bağlantınızı kontrol ederek tekrar deneyin veya birazdan yeniden sorunuzu iletin.`;
+    }
+
+    return data.choices[0].message.content;
   }
 
   static async getResponse(
@@ -93,6 +100,6 @@ export class OpenAIService {
       return `🛠️ **İnternet bağlantısı nedeniyle AI hizmetimize ulaşamıyorum.**\n\n**Temel Çözüm Önerileri:**\n• URL'yi kontrol edin\n• Farklı format deneyin (MP4 önerilir)\n• İndirme programını yeniden başlatın\n\n**Daha fazla yardım için lütfen tekrar deneyin.**`;
     }
 
-    return `🤖 **AI hizmetimize şu anda ulaşamıyorum.**\n\nSize yardımcı olmak için tekrar deneyin. YouTube video indirme, format seçimi ve teknik sorular hakkında size yardımcı olabilirim.\n\n**YouTube-indirme.com.tr uzmanınız**`;
+    return `🛠️ **AI hizmetimizde geçici bir sorun oluştu.**\n\nŞu anda size yanıt veremiyorum. Lütfen biraz sonra tekrar deneyin veya YouTube video indirme hakkında başka bir soru sorun.`;
   }
 }
