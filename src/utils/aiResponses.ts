@@ -7,18 +7,18 @@ export const getAIResponse = async (userMessage: string): Promise<string> => {
   try {
     // Add user message to history
     conversationHistory.push({ role: 'user', content: userMessage });
-    
-    // Get AI response with new optimized service
-    const response = await OpenAIService.getResponse(userMessage, conversationHistory);
-    
+
+    // Artık OpenAI doğrudan çağrılmıyor, edge fonksiyondan response alınacak
+    const response = await import('@/services/openaiService').then(o => o.OpenAIService.getResponse(userMessage, conversationHistory));
+
     // Add AI response to history
     conversationHistory.push({ role: 'assistant', content: response });
-    
+
     // Keep only last 8 messages to prevent token overflow (reduced from 10)
     if (conversationHistory.length > 8) {
       conversationHistory = conversationHistory.slice(-8);
     }
-    
+
     return response;
   } catch (error) {
     console.error('AI Response Error:', error);
