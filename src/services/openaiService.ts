@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 
 const SYSTEM_PROMPT = `Sen YouTube video indirme konusunda SADECE uzman bir AI asistanısın. Türkçe konuşuyorsun.
 
@@ -43,24 +44,14 @@ export class OpenAIService {
   }
 
   private static async makeRequest(messages: Array<{role: string, content: string}>) {
-    // Edge function endpoint:
-    const EDGE_FUNCTION_URL =
-      "https://qkybzlzzfbumyczewssi.functions.supabase.co/youtubeindir_chat";
-
-    const response = await fetch(EDGE_FUNCTION_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ messages }),
+    const { data, error } = await supabase.functions.invoke('youtubeindir_chat', {
+      body: { messages },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Edge Function Error: ${error.error || 'Unknown error'}`);
+    if (error) {
+      throw new Error(`Edge Function Error: ${error.message}`);
     }
 
-    const data = await response.json();
     // OpenAI API returns data in .choices[0].message.content
     return (
       data?.choices?.[0]?.message?.content ||
