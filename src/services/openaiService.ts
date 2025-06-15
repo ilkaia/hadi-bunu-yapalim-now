@@ -56,9 +56,10 @@ export class OpenAIService {
     // OpenAI API returns data in .choices[0].message.content
     // Daha fazla hata kontrolü eklendi!
     if (!data || !data.choices || !Array.isArray(data.choices) || !data.choices[0]?.message?.content) {
-      // OpenAI dönüşünde bir hata mesajı varsa göster
+      // OpenAI dönüşünde bir hata mesajı varsa göster - object'i düzgün stringify et
       if (data?.error) {
-        return `🛠️ **AI hizmetine erişilemedi!**\n\nDetay: ${data.error}\n\nLütfen tekrar deneyin veya daha sonra yeniden deneyin.`;
+        const errorMessage = typeof data.error === 'object' ? JSON.stringify(data.error) : data.error;
+        return `🛠️ **AI hizmetine erişilemedi!**\n\nDetay: ${errorMessage}\n\nLütfen tekrar deneyin veya daha sonra yeniden deneyin.`;
       }
       return `🛠️ **AI hizmetimizde geçici bir sorun oluştu.**\n\nSize şu anda yanıt veremiyorum. Lütfen internet bağlantınızı kontrol ederek tekrar deneyin veya birazdan yeniden sorunuzu iletin.`;
     }

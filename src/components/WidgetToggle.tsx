@@ -11,7 +11,9 @@ interface WidgetToggleProps {
 
 // Sadece widget kapalıyken toggle gözüksün
 const WidgetToggle = ({ isOpen, onClick, unreadCount = 0 }: WidgetToggleProps) => {
+  // Widget açıkken tamamen gizle
   if (isOpen) return null;
+  
   return (
     <div className="relative">
       <Button
