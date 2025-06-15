@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,9 @@ import TypingIndicator from "./TypingIndicator";
 import { getAIResponse, resetConversation } from "@/utils/aiResponses";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import ChatHeader from "./chat/ChatHeader";
+import ChatMessagesList from "./chat/ChatMessagesList";
+import ChatInput from "./chat/ChatInput";
 
 interface Message {
   id: string;
@@ -30,7 +32,7 @@ const ChatInterface = ({ isWidget = false, onNewMessage, onClose }: ChatInterfac
       type: 'ai',
       content: isWidget 
         ? 'Merhaba! YouTube video indirme konusunda size nasıl yardımcı olabilirim?' 
-        : 'Merhaba! Ben YouTube video indirme konusunda size yardımcı olacak AI asistanınızım. OpenAI GPT-4 ile güçlendirilmiş gelişmiş yanıtlar sunuyorum. Video indirme, format dönüştürme, kalite seçimi ve teknik sorularınız için buradayım. Size nasıl yardımcı olabilirim?',
+        : 'Merhaba! Ben YouTube video indirme konusunda size yardımcı olacak AI asistanım. OpenAI GPT-4 ile güçlendirilmiş gelişmiş yanıtlar sunuyorum. Video indirme, format dönüştürme, kalite seçimi ve teknik sorularınız için buradayım. Size nasıl yardımcı olabilirim?',
       timestamp: new Date()
     }
   ]);
@@ -133,113 +135,39 @@ const ChatInterface = ({ isWidget = false, onNewMessage, onClose }: ChatInterfac
 
   return (
     <Card className={cn(
-      "flex flex-col shadow-xl border-0 bg-white/80 backdrop-blur-sm",
+      "flex flex-col shadow-xl border-0 bg-white/80 backdrop-bl-sm",
       isWidget ? "h-full" : "h-[600px]"
     )}>
       {/* Chat Header */}
-      <div className="p-4 border-b bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <Bot className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className={cn("font-semibold", isWidget ? "text-sm" : "text-base")}>
-                AI Video Asistan
-              </h3>
-              <div className="flex items-center gap-2 text-xs opacity-90">
-                {isOnline ? (
-                  <>
-                    <Wifi className="w-3 h-3" />
-                    <span>GPT-4 Aktif</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="w-3 h-3" />
-                    <span>Çevrimdışı</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {!isWidget && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={clearChat}
-                className="text-white hover:bg-white/20"
-              >
-                Temizle
-              </Button>
-            )}
-            
-            {isWidget && onClose && (
-              <>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearChat}
-                  className="text-white hover:bg-white/20 p-2"
-                >
-                  <Minimize2 className="w-4 h-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onClose}
-                  className="text-white hover:bg-white/20 p-2"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      <ChatHeader
+        isWidget={isWidget}
+        isOnline={isOnline}
+        clearChat={clearChat}
+        onClose={onClose}
+      />
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {!isOnline && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center gap-2 text-yellow-800">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">İnternet bağlantısı yok. Sınırlı yanıtlar verilecek.</span>
-          </div>
-        )}
-        
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        {isTyping && <TypingIndicator />}
-        <div ref={messagesEndRef} />
-      </div>
+      <ChatMessagesList
+        messages={messages}
+        isOnline={isOnline}
+        isTyping={isTyping}
+        messagesEndRef={messagesEndRef}
+      />
 
       {/* Input Area */}
-      <div className="p-4 border-t bg-gray-50/50">
-        <div className="flex gap-2">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={isWidget ? "Soru sorun..." : "YouTube video indirme hakkında soru sorun..."}
-            className="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            disabled={isTyping}
-          />
-          <Button 
-            onClick={handleSendMessage} 
-            disabled={!inputValue.trim() || isTyping}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
-        {!isWidget && (
-          <p className="text-xs text-gray-500 mt-2 text-center">
-            OpenAI GPT-4 ile güçlendirilmiş • YouTube indirme uzmanı
-          </p>
-        )}
-      </div>
+      <ChatInput
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        handleKeyPress={handleKeyPress}
+        handleSendMessage={handleSendMessage}
+        isTyping={isTyping}
+        isWidget={isWidget}
+      />
+      {!isWidget && (
+        <p className="text-xs text-gray-500 mt-2 text-center pb-2">
+          OpenAI GPT-4 ile güçlendirilmiş • YouTube indirme uzmanı
+        </p>
+      )}
     </Card>
   );
 };
