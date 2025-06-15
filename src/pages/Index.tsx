@@ -1,60 +1,43 @@
 
-import ChatWidget from "@/components/ChatWidget";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import IntegrationGuide from "@/components/IntegrationGuide";
+import ChatInterface from "@/components/ChatInterface";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            YouTube İndirme AI Asistan
-          </h1>
-          <p className="text-lg text-gray-600 mb-4">
-            Video indirme, format dönüştürme ve teknik sorularınız için uzman asistanınız
-          </p>
-          <div className="mt-4 text-sm text-blue-600">
-            YouTube-indirme.com.tr
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto py-8">
+        <Tabs defaultValue="integration" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="integration">Integration Guide</TabsTrigger>
+            <TabsTrigger value="preview">Widget Preview</TabsTrigger>
+          </TabsList>
           
-          {/* Demo Content */}
-          <div className="mt-12 bg-white/60 backdrop-blur-sm rounded-lg p-8 shadow-lg">
-            <h2 className="text-2xl font-semibold mb-4">Widget Demo</h2>
-            <p className="text-gray-600 mb-4">
-              Sağ alt köşedeki chat widget'ına tıklayarak AI asistanımızla konuşmaya başlayın.
-            </p>
-            <div className="grid md:grid-cols-2 gap-6 text-left">
-              <div>
-                <h3 className="font-semibold mb-2">✨ Widget Özellikleri</h3>
-                <ul className="text-sm space-y-1 text-gray-600">
-                  <li>• Floating tasarım</li>
-                  <li>• Responsive (mobil uyumlu)</li>
-                  <li>• Bildirim sistemi</li>
-                  <li>• Minimize/maximize</li>
-                  <li>• Kolay entegrasyon</li>
-                </ul>
+          <TabsContent value="integration" className="mt-6">
+            <IntegrationGuide />
+          </TabsContent>
+          
+          <TabsContent value="preview" className="mt-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold mb-2">Widget Preview</h2>
+                <p className="text-gray-600">This is how your widget will look and behave on your website.</p>
               </div>
-              <div>
-                <h3 className="font-semibold mb-2">🤖 AI Yetenekleri</h3>
-                <ul className="text-sm space-y-1 text-gray-600">
-                  <li>• OpenAI GPT-4</li>
-                  <li>• YouTube uzmanı</li>
-                  <li>• Format önerileri</li>
-                  <li>• Teknik destek</li>
-                  <li>• Türkçe dil desteği</li>
-                </ul>
+              
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <ChatInterface isWidget={false} />
+              </div>
+              
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800 text-sm">
+                  <strong>Note:</strong> The actual widget will appear as a floating chat button in the bottom-right corner of your website. 
+                  The above is just a preview of the chat interface.
+                </p>
               </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Chat Widget */}
-      <ChatWidget 
-        position="bottom-right"
-        theme="light"
-        brandColor="#2563eb"
-        minimized={true}
-      />
     </div>
   );
 };

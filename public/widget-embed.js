@@ -15,14 +15,15 @@
     theme: 'light',
     brandColor: '#2563eb',
     minimized: true,
-    responsive: true
+    responsive: true,
+    widgetUrl: 'https://ilkaia.github.io/hadi-bunu-yapalim-now/'
   };
   
   // Widget container'ını oluştur
   function createWidget() {
     const iframe = document.createElement('iframe');
     iframe.id = 'youtube-ai-widget';
-    iframe.src = 'https://ilkaia.github.io/hadi-bunu-yapalim-now/';
+    iframe.src = config.widgetUrl;
     iframe.frameBorder = '0';
     iframe.scrolling = 'no';
     iframe.allow = 'microphone; camera';
@@ -79,6 +80,7 @@
     // Global widget objesi
     window.YouTubeAIWidget = {
       iframe: iframe,
+      config: config,
       show: function() {
         iframe.style.display = 'block';
       },
@@ -91,10 +93,10 @@
           iframe.parentNode.removeChild(iframe);
         }
         delete window.YouTubeAIWidget;
-      },
-      config: config
+      }
     };
     
+    console.log('YouTube AI Widget loaded successfully');
     return iframe;
   }
   
