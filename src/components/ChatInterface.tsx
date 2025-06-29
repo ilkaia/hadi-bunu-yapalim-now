@@ -1,175 +1,99 @@
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Send, Bot, AlertCircle, Wifi, WifiOff, X, Minimize2 } from "lucide-react";
-import MessageBubble from "./MessageBubble";
-import TypingIndicator from "./TypingIndicator";
-import { getAIResponse, resetConversation } from "@/utils/aiResponses";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import ChatHeader from "./chat/ChatHeader";
-import ChatMessagesList from "./chat/ChatMessagesList";
-import ChatInput from "./chat/ChatInput";
+import ChatInterface from "./ChatInterface";
+import WidgetToggle from "./WidgetToggle";
 
-interface Message {
-  id: string;
-  type: 'user' | 'ai';
-  content: string;
-  timestamp: Date;
+interface ChatWidgetProps {
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  theme?: 'light' | 'dark' | 'auto';
+  brandColor?: string;
+  apiKey?: string;
+  welcomeMessage?: string;
+  minimized?: boolean;
 }
 
-interface ChatInterfaceProps {
-  isWidget?: boolean;
-  onNewMessage?: () => void;
-  onClose?: () => void;
-}
+const ChatWidget = ({ 
+  position = 'bottom-right',
+  theme = 'light',
+  brandColor = '#2563eb',
+  minimized = true
+}: ChatWidgetProps) => {
+  const [isOpen, setIsOpen] = useState(!minimized);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-const ChatInterface = ({ isWidget = false, onNewMessage, onClose }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'ai',
-      content: isWidget 
-        ? 'Merhaba! YouTube video indirme konusunda size nasıl yardımcı olabilirim?' 
-        : 'Merhaba! Ben YouTube video indirme konusunda size yardımcı olacak AI asistanım. OpenAI GPT-4 ile güçlendirilmiş gelişmiş yanıtlar sunuyorum. Video indirme, format dönüştürme, kalite seçimi ve teknik sorularınız için buradayım. Size nasıl yardımcı olabilirim?',
-      timestamp: new Date()
-    }
-  ]);
-  const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  // Monitor online status
+  // Responsive detection
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
     };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Position classes mapping
+  const positionClasses = {
+    'bottom-right': 'bottom-6 right-6',
+    'bottom-left': 'bottom-6 left-6', 
+    'top-right': 'top-6 right-6',
+    'top-left': 'top-6 left-6'
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isTyping]);
-
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue("");
-    setIsTyping(true);
-
-    try {
-      const aiResponse = await getAIResponse(inputValue);
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: aiResponse,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
-      
-      // Notify parent component about new message (for widget mode)
-      if (isWidget && onNewMessage) {
-        onNewMessage();
-      }
-    } catch (error) {
-      console.error('Chat Error:', error);
-      if (!isWidget) {
-        toast({
-          title: "Bağlantı Hatası",
-          description: "AI yanıtı alınırken hata oluştu. Lütfen tekrar deneyin.",
-          variant: "destructive"
-        });
-      }
-
-      const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        type: 'ai',
-        content: "🛠️ **Bağlantı Hatası**\n\nYanıt alırken bir sorun oluştu. Lütfen:\n• İnternet bağlantınızı kontrol edin\n• Tekrar deneyin\n• Sorun devam ederse sayfayı yenileyin",
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsTyping(false);
+  const toggleWidget = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setUnreadCount(0);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleNewMessage = () => {
+    if (!isOpen) {
+      setUnreadCount(prev => prev + 1);
     }
-  };
-
-  const clearChat = () => {
-    setMessages([{
-      id: '1',
-      type: 'ai',
-      content: 'Sohbet temizlendi! Size nasıl yardımcı olabilirim?',
-      timestamp: new Date()
-    }]);
-    resetConversation();
   };
 
   return (
-    <Card className={cn(
-      "flex flex-col shadow-xl border-0 bg-white/80 backdrop-bl-sm",
-      isWidget ? "h-full" : "h-[600px]"
-    )}>
-      {/* Chat Header */}
-      <ChatHeader
-        isWidget={isWidget}
-        isOnline={isOnline}
-        clearChat={clearChat}
-        onClose={onClose}
+    <div 
+      className="chat-widget"
+      style={{ 
+        '--brand-color': brandColor 
+      } as React.CSSProperties}
+    >
+      {/* Toggle Button */}
+      <WidgetToggle 
+        isOpen={isOpen}
+        onClick={toggleWidget}
+        unreadCount={unreadCount}
       />
 
-      {/* Messages Area */}
-      <ChatMessagesList
-        messages={messages}
-        isOnline={isOnline}
-        isTyping={isTyping}
-        messagesEndRef={messagesEndRef}
-      />
-
-      {/* Input Area */}
-      <ChatInput
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-        handleKeyPress={handleKeyPress}
-        handleSendMessage={handleSendMessage}
-        isTyping={isTyping}
-        isWidget={isWidget}
-      />
-      {!isWidget && (
-        <p className="text-xs text-gray-500 mt-2 text-center pb-2">
-          OpenAI GPT-4 ile güçlendirilmiş • YouTube indirme uzmanı
-        </p>
+      {/* Chat Widget Container */}
+      {isOpen && (
+        <div 
+          className={cn(
+            "fixed z-40 transition-all duration-300 ease-in-out",
+            isMobile 
+              ? "bottom-20 right-4 left-4 h-96" // Mobilde daha küçük
+              : cn(
+                  "w-96 h-[500px]", // Masaüstünde biraz küçültüldü
+                  positionClasses[position]
+                ),
+            "animate-in slide-in-from-bottom-4 fade-in-0"
+          )}
+        >
+          {/* Chat Interface */}
+          <div className="relative z-10 h-full">
+            <ChatInterface 
+              isWidget={true}
+              onNewMessage={handleNewMessage}
+              onClose={() => setIsOpen(false)}
+            />
+          </div>
+        </div>
       )}
-    </Card>
+    </div>
   );
 };
 
-export default ChatInterface;
+export default ChatWidget;
