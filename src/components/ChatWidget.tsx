@@ -72,15 +72,17 @@ const ChatWidget = ({
       {/* Chat Widget Container */}
       {isOpen && (
         <div 
-          className={cn(
-            className={cn(
-  "fixed z-40 transition-all duration-300 ease-in-out",
-  isMobile 
-    ? "bottom-6 right-4 w-80 h-96 max-w-[calc(100vw-2rem)]" // Mobil: küçük widget
-    : cn(
-        "w-96 h-[500px]", 
-        positionClasses[position]
-      ),
+  className={cn(
+    "fixed z-40 transition-all duration-300 ease-in-out",
+    isMobile 
+      ? "bottom-6 right-4 w-80 h-96 max-w-[calc(100vw-2rem)]"
+      : cn(
+          "w-96 h-[500px]", 
+          positionClasses[position]
+        ),
+    "animate-in slide-in-from-bottom-4 fade-in-0"
+  )}
+>
   "animate-in slide-in-from-bottom-4 fade-in-0"
 )}
           )}
